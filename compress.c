@@ -4,7 +4,7 @@
  {
     int i;
     int file_count = 0;
-    char prefix = "to_compress/";
+    char *prefix = "to_compress/";
 
     //checking if a file name was inntroduced in the command
     if (argc == 1) {
@@ -30,14 +30,26 @@
         goto error_path;
     }
 
-    for (i = 1; i <= argc; ++i) {
+    for (i = 1; i < argc; ++i) {
+        char *file_name;
+        char *last_slash = strrchr(argv[i], '/');
+        if (last_slash != NULL) {
+            file_name = last_slash + 1;
+        } else {
+            file_name = argv[i];
+        }
+
         strcpy(path, prefix);
-        strcat(path, argv[i]);
+        strcat(path, file_name);
+
         FILE *fin = fopen(path, "rb");
         if (fin != NULL) {
-            files[file_count].name = argv[i];
-            update_freq(fin, freq);
+            files[file_count].name = file_name;
+            files[file_count].file_len = update_freq(fin, freq);
             file_count++;
+            fclose(fin);
+        } else {
+            printf("File: %s was not found in folder to_compress/\n", file_name);
         }
     }
 
@@ -49,7 +61,7 @@
     return 0;
 
     //err zone
-    free(path);
+    free(path); //in case of allocating something i've put this to not forget to free(path) in case of a future allocation error
 
 error_path:
     free(files);

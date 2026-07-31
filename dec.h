@@ -10,3 +10,6 @@ typedef struct fil{
     int file_len;
     char *name;
 }d_file, *t_file;
+
+//functions.c
+int update_freq(FILE *fin, int *freq);
