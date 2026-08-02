@@ -96,12 +96,24 @@
     if (root == NULL) {
         goto error_make_heap;
     }
-    //end of what i've done today, done the huffman tree
-
+    //setting up the hashmap
+    char **hashmap = (char **)calloc(NO_CHAR, sizeof(char *));
+    if (hashmap == NULL) {
+        goto error_hashmap;
+    }
+    int ok = 1;
+    setup_hashmap(hashmap, root, 0, 0, &ok);
+    if (ok == 0) {
+        goto error_strings_hashmap;
+    }
 
     //free memory
-free_zone:
+    for (i = 0; i < NO_CHAR; ++i) {
+        free(hashmap[i]);
+    }
+    free(hashmap);
     free_tree(root);
+free_zone:
     free(head_letter);
     free(head_parent);
     free(arr);
@@ -111,7 +123,14 @@ free_zone:
     return 0;
 
     //err zone
-    free_tree(root); // in case of further allocation its a reminder for me to free root
+error_strings_hashmap:
+    for (i = 0; i < NO_CHAR; ++i) {
+        free(hashmap[i]);
+    }
+    free(hashmap);
+
+error_hashmap:
+    free_tree(root);
 
 error_make_heap:
     t_node aux_p = head_parent->next;

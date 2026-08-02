@@ -1,6 +1,28 @@
 #include "dec.h"
 
 //local
+char* make_binary(int num, int depth) {
+    int i;
+    //edge case
+    if (depth == 0) {
+        depth = 1;
+    }
+
+    char *bin_str = (char *) malloc((depth + 1) * sizeof(char));
+    if (bin_str == NULL) {
+        return NULL;
+    }
+
+    //building the string from back to front
+    bin_str[depth] = '\0';
+    for (i = 1; i < depth + 1; ++i) {
+        bin_str[depth - i] = (num & 1) + '0';
+        num >>= 1;
+    }
+
+    return bin_str;
+}
+
 int comp(const void *a, const void *b)
 {
     t_lit el1 = (t_lit)a;
@@ -177,4 +199,23 @@ t_tree_node make_heap(t_node head_parent, t_node head_letter) // -1 = not enough
     t_tree_node final = head_parent->next->node;
     pop(head_parent);
     return final;
+}
+
+void setup_hashmap(char *hashmap[], t_tree_node root, int number, int depth, int *ok) // 0 success, 0 aloc err
+{
+    if (*ok == 1) {
+        if (root->lt == NULL && root->rt == NULL) {
+            hashmap[root->ch] = make_binary(number, depth);
+            if (hashmap[root->ch] == NULL) {
+                *ok = 0;
+            }
+        } else {
+            if (root->lt != NULL && *ok == 1) {
+                setup_hashmap(hashmap, root->lt, (number << 1) + 1, depth + 1, ok);
+            }
+            if (root->rt != NULL && *ok == 1) {
+                setup_hashmap(hashmap, root->rt, number << 1, depth + 1, ok);
+            }
+        }
+    }
 }
