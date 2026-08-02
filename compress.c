@@ -106,6 +106,12 @@
     if (ok == 0) {
         goto error_strings_hashmap;
     }
+    fwrite(&file_count, sizeof(int), 1, fout);
+    for (i = 0; i < file_count; ++i) {
+        fwrite(files[i].name, sizeof(char), strlen(files[i].name) + 1, fout);
+        fwrite(&files[i].file_len, sizeof(int), 1, fout);
+    }
+    
 
     //free memory
     for (i = 0; i < NO_CHAR; ++i) {
