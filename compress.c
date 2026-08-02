@@ -59,7 +59,7 @@
     }
 
     //heading the freq vector in the output file
-    FILE *fout = fopen("compressed/archive.bin", "wb");
+    FILE *fout = fopen("output/archive.bin", "wb");
     if (fout == NULL) {
         goto error_header_print;
     }
