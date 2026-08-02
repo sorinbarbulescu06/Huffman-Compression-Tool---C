@@ -57,13 +57,15 @@
         printf("No files match the search for the compression. Leaving...\n");
         goto error_header_print;
     }
+
     //heading the freq vector in the output file
-    FILE *fout = fopen("archive.bin", "wb");
+    FILE *fout = fopen("compressed/archive.bin", "wb");
     if (fout == NULL) {
         goto error_header_print;
     }
     fwrite(freq, sizeof(int), NO_CHAR, fout);
 
+    //making the array of letters and then sorting it
     t_lit arr = make_sorted_array(freq);
     if(arr == NULL) {
         goto error_array;
@@ -71,6 +73,7 @@
     free(freq);
     freq = NULL;
 
+    //init and alloc the lists for parent nodes and leaf nodes
     t_node head_parent = (t_node) malloc(sizeof(d_node));
     if (head_parent == NULL) {
         goto error_head_parent;
@@ -84,18 +87,22 @@
     head_letter->next = head_letter;
     head_letter->prev = head_letter;
 
+    //making the leaf list
     int aux = make_list(head_letter, arr);
     if (aux == -1){
         goto error_letter_list;
     }
-    if (aux == 0) {
+    if (aux == 0) { //case of not finding any letters
         printf("0 bytes of memory cannot be compressed. Leaving...\n");
         goto free_zone;
     }
+
+    //setting up the huffman tree
     t_tree_node root = make_heap(head_parent, head_letter);
     if (root == NULL) {
         goto error_make_heap;
     }
+
     //setting up the hashmap
     char **hashmap = (char **)calloc(NO_CHAR, sizeof(char *));
     if (hashmap == NULL) {
@@ -106,12 +113,21 @@
     if (ok == 0) {
         goto error_strings_hashmap;
     }
-    fwrite(&file_count, sizeof(int), 1, fout);
+
+    //printing the file count, then the names and len for every one of them
     for (i = 0; i < file_count; ++i) {
         fwrite(files[i].name, sizeof(char), strlen(files[i].name) + 1, fout);
         fwrite(&files[i].file_len, sizeof(int), 1, fout);
     }
-    
+    //printing the data block
+    unsigned char buf = 0;
+    int buf_count = 0;
+    for (i = 0; i < file_count; ++i) {
+        strcpy(path, prefix);
+        strcat(path, files[i].name);
+        FILE *fin = fopen(path, "rb");
+        write_compressed(fin, fout, hashmap, &buf,  &buf_count);
+    }
 
     //free memory
     for (i = 0; i < NO_CHAR; ++i) {

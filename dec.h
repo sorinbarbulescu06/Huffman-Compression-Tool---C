@@ -39,3 +39,4 @@ t_lit make_sorted_array(int *freq);
 int make_list(t_node head, t_lit arr);
 t_tree_node make_heap(t_node head_parent, t_node head_letter);
 void setup_hashmap(char *hashmap[], t_tree_node root, int number, int depth, int *ok);
+void write_compressed(FILE *fin, FILE *fout, char *hashmap[], unsigned char *buf, int *buf_count);

@@ -1,6 +1,27 @@
 #include "dec.h"
 
 //local
+void put_in_file(FILE *fout, char *string, unsigned char *buf, int *buf_count)
+{
+    int cursor = 0;
+    int full_len = strlen(string);
+    while (cursor < full_len) {
+        while(*buf_count < 8 && cursor < full_len) {
+            *buf = *buf << 1;
+            if (string[cursor] == '1') { //pushing 1 in buffer, else nothing
+                *buf += 1;
+            }
+            *buf_count = *buf_count + 1;
+            cursor++;
+        }
+        if (*buf_count == 8) {
+            fwrite(buf, sizeof(unsigned char), 1, fout);
+            *buf = 0;
+            *buf_count = 0;
+        }
+    }
+}
+
 char* make_binary(int num, int depth) {
     int i;
     //edge case
@@ -127,8 +148,7 @@ int make_list(t_node head, t_lit arr) // -1 = aloc err, 0 = 0 letters, 1 = ok
         push(t, head);
         cursor--;
     }
-    return 0;
-
+    return 1;
 }
 
 //compress.c
@@ -218,4 +238,14 @@ void setup_hashmap(char *hashmap[], t_tree_node root, int number, int depth, int
             }
         }
     }
+}
+
+void write_compressed(FILE *fin, FILE *fout, char *hashmap[], unsigned char *buf, int *buf_count)
+{
+    int ch = fgetc(fin);
+    while (ch != EOF) {
+        put_in_file(fout, hashmap[ch], buf, buf_count);
+        ch = fgetc(fin);
+    }
+    put_in_file(fout, hashmap[NO_CHAR - 1], buf, buf_count);
 }
